@@ -16,8 +16,10 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
   const [modalImageIndex, setModalImageIndex] = useState(0);
   const [imageData, setImageData] = useState<ImageDataState[]>([] as ImageDataState[]);
   const [refreshing, setRefreshing] = useState(false);
-  const ref = useRef<any>(null)
+  // TODO: type fix
+  const refFlatList = useRef<any>(null);
 
+  // refresh
   const onRefresh = useCallback(
     async () => {
       setRefreshing(true);
@@ -61,6 +63,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
     setModalVisible(true)
   }, [modalVisible, modalImageIndex])
 
+  // more load components
   const renderLoadMoreView = () => {
     return <View style={styles.loadMore}>
       <ActivityIndicator
@@ -72,14 +75,15 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
     </View>
   }
 
+  // go top
   const goToTop = useCallback(() => {
-    ref.current.scrollToOffset({ offset: 0 });
-  }, [ref])
+    refFlatList.current.scrollToOffset({ offset: 0 });
+  }, [refFlatList])
 
   return (
     <View style={styles.container}>
       <FlatList
-        ref={ref}
+        ref={refFlatList}
         numColumns={2}
         data={imageData}
         refreshControl={
