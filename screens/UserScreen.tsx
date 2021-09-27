@@ -6,10 +6,11 @@ import {
   NativeScrollEvent, ActionSheetIOS, TouchableWithoutFeedback,
   Dimensions, Platform
 } from 'react-native';
-import { ScrollView, Box, Button, Image, Flex, FlatList, Fab, useToast } from 'native-base';
+import { Avatar, Box, Spacer, Image, Flex, FlatList, Center, useToast } from 'native-base';
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
 import { useThrottleFn } from 'ahooks';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -23,7 +24,7 @@ import useSaveImage from '../hooks/useSaveImage'
 import ViewImageFooter from '../components/ViewImageFooter'
 
 const FailImageUrl = "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
-const {width, height, scale} = Dimensions.get('window');
+const { width, height, scale } = Dimensions.get('window');
 const KEY_LOCK_BOOKMARKS = 'LOCK_BOOKMARKS'
 
 export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
@@ -35,231 +36,99 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
   const refFlatList = useRef<any>(null);
   const [visibleBackTop, setVisibleBackTop] = useState<boolean>(false)
   const toast = useToast();
-  const { handleDownload } = useSaveImage();
-
-  // refresh
-  const onRefresh = useCallback(
-    async () => {
-      setRefreshing(true);
-      await fetchBookmarks()
-      setRefreshing(false)
-    }, []);
-
-  /**
-   * fetch cosplay
-   */
-  const fetchBookmarks = useCallback(
-    async () => {
-      const res = await storeGet(KEY_LOCK_BOOKMARKS)
-      const data: ImageDataState[] = res ? JSON.parse(res) : []
-      setImageData(data)
-    }, [imageData])
-
-  useEffect(() => {
-    fetchBookmarks()
-    return () => {
-      setImageData([])
-    }
-  }, [])
-
-  /**
-   * 处理图片点击预览
-   */
-  const handleImageShow = useCallback((idx: number) => {
-    setModalImageIndex(idx)
-    setModalVisible(true)
-  }, [modalVisible, modalImageIndex])
-
-  // more load components
-  const RenderLoadMoreView = () => {
-    return <View style={styles.loadMore}>
-      <Text>Not</Text>
-    </View>
-  }
-
-
-  /**
-   * throttle set visible backTop
-   */
-  const { run: handleVisibleBackTop } = useThrottleFn(
-    (value: boolean) => {
-      setVisibleBackTop(value);
-    },
-    { wait: 300 },
-  );
-
-  /**
-   * 处理滚垱显示返回顶部功能
-   */
-  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { y } = e.nativeEvent.contentOffset
-    if (y >= 100) {
-      handleVisibleBackTop(true)
-    } else {
-      handleVisibleBackTop(false)
-    }
-  }, [])
-
-  /**
-   * handle view image share
-   */
-  const handleShare = useCallback(() => {
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        options: ["Cancel", "Generate", "Reset"],
-        destructiveButtonIndex: 2,
-        cancelButtonIndex: 0,
-        // userInterfaceStyle: 'dark'
-      },
-      buttonIndex => {
-        if (buttonIndex === 0) {
-          // cancel action
-        } else if (buttonIndex === 1) {
-          Alert.alert('Generate')
-        } else if (buttonIndex === 2) {
-          Alert.alert('Reset')
-        }
-      }
-    );
-  }, [])
-
-  // go top
-  const goToTop = useCallback(() => {
-    refFlatList.current.scrollToOffset({ offset: 0 });
-  }, [refFlatList])
-
-    /**
-     * Handle bookmark
-     *
-     */
-    // TODO：upgrade
-    const handleBookmark = useCallback(
-      async (val: ImageDataState) => {
-        const _value = { url: val.url }
-
-        const res = await storeGet(KEY_LOCK_BOOKMARKS)
-        let data = res ? JSON.parse(res) : []
-        console.log('data', data)
-
-        if (isEmpty(data)) {
-          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify([_value]))
-          Alert.alert('Success')
-        } else {
-          // storeRemove(KEY_LOCK_BOOKMARKS)
-
-          data.push(_value)
-          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify(data))
-          Alert.alert('Success')
-      }
-    }, [])
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        ref={refFlatList}
-        numColumns={2}
-        data={imageData}
-        keyExtractor={(item, index) => `key${index}-${item.url}`}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListFooterComponent={() => RenderLoadMoreView()}
-        onScroll={handleScroll}
-        renderItem={({ item, index }) => (
-          <StyledPressable
-            style={{
-              marginRight: index % 2 === 0 ? 5 : 0,
-              marginLeft: index % 2 !== 0 ? 5 : 0,
-              marginBottom: 10
-            }}
-            onPress={() => handleImageShow(index)}
-          >
-            <Image
-              source={{
-                uri: item.url,
-              }}
-              alt="Alternate Text"
-              width="100%"
-              height="300px"
-              fallbackSource={{
-                uri: FailImageUrl
-              }}
-            />
-          </StyledPressable>
-        )} />
-
-      <Modal visible={modalVisible} transparent={true}
-        onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
-          setModalVisible(false);
-        }}>
-        <ImageViewer
-          imageUrls={imageData}
-          onClick={() => setModalVisible(false)}
-          index={modalImageIndex}
-          failImageSource={{ url: FailImageUrl }}
-          onSave={(url) => { console.log('rul', url) }}
-          renderFooter={() => <ViewImageFooter imageData={imageData} currentIndex={modalImageIndex} />}
+    <StyledWrapper>
+      <StyledUser alignItems="center" justifyContent="flex-start" direction="row">
+        <Avatar
+          bg="cyan.500"
+          source={{
+            uri: "https://avatars.githubusercontent.com/u/24250627?v=4",
+          }}
         />
-      </Modal>
-
+        <StyledUserText>Xiaotian</StyledUserText>
+      </StyledUser>
       {
-        visibleBackTop
-          ? <Fab
-            position="absolute"
-            size="sm"
-            right={'20px'}
-            bottom={'100px'}
-            onPress={goToTop}
-            colorScheme="indigo"
-            icon={
-              <FontAwesome size={24} name="arrow-up" color={'#fff'} />
-            }
-          />
-          : null
+        [1, 1, 1, 1].map((i, idx) => (
+          <StyledItem direction="row" alignItems="center" justifyContent="space-between" key={idx} borderRadius={10} >
+            <Center flex="1">
+              <FontAwesome size={20} name="github" color={'#3cd8cc'} />
+              <StyledItemText>Github</StyledItemText>
+            </Center>
+            <Center flex="1">
+              <FontAwesome size={20} name="question" color={'#3cd8cc'} />
+              <StyledItemText>问题反馈</StyledItemText>
+            </Center>
+            <Center flex="1">
+              <FontAwesome size={20} name="cloud" color={'#3cd8cc'} />
+              <StyledItemText>同步数据</StyledItemText>
+            </Center>
+            <Center flex="1">
+              <FontAwesome size={20} name="heart" color={'#3cd8cc'} />
+              <StyledItemText>喜欢项目</StyledItemText>
+            </Center>
+          </StyledItem>
+        ))
       }
-    </View>
+
+      <StyledBackground colors={['#3cd8cc', '#46dfbc']} end={{ x: 0, y: 1 }}></StyledBackground>
+    </StyledWrapper>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+var styles = StyleSheet.create({
+  linearGradient: {
     flex: 1,
-    width: '100%'
+    paddingLeft: 15,
+    paddingRight: 15,
+    borderRadius: 5
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  buttonText: {
+    fontSize: 18,
+    fontFamily: 'Gill Sans',
+    textAlign: 'center',
+    margin: 10,
+    color: '#ffffff',
+    backgroundColor: 'transparent',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  loadMore: {
-    alignItems: "center",
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  indicator: {
-    color: "#f1f1f1",
-    margin: 10
-  }
 });
 
-const StyledPressable = styled(Pressable)`
-  width: 50%;
-  height: 300px;
-  background-color: #f1f1f1;
+
+const StyledWrapper = styled(View)`
+  flex: 1;
+  padding: 20px;
+  background-color: #f0ecf3;
+  position: relative;
 `;
 
-const StyledViewFooterWrapper = styled(Flex)`
-  background-color: rgba(255, 255, 255, .1);
-  margin-bottom: 40px;
+const StyledUser = styled(Flex)`
+  padding: 20px 0;
 `;
-const StyledViewFooterItem = styled(Flex)`
-  width: 60px;
-  height: 60px;
-  margin: 0 20px;
-  padding: 10px 0;
+const StyledUserText = styled(Text)`
+  color: #fff;
+  margin-left: 10px;
+  font-size: 20px;
+  font-weight: bold;
+`;
+const StyledItem = styled(Flex)`
+  background-color: #fff;
+  margin: 20px 0 0 0;
+  padding: 20px 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .04);
+`;
+
+const StyledItemText = styled(Text)`
+  color: #7a7a7a;
+  margin-top: 4px;
+  font-size: 14px;
+`;
+
+const StyledBackground = styled(LinearGradient)`
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  background-color: transparent;
+  height: 160px;
+  z-index: -1;
 `;
