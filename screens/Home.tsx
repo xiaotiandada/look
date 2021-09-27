@@ -1,8 +1,14 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { StyleSheet, Button as ButtonNative, Image as ImageNative, Modal, Alert, Pressable, TouchableOpacity, RefreshControl, ActivityIndicator, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import {
+  StyleSheet, Button as ButtonNative, Image as ImageNative,
+  Modal, Alert, Pressable, TouchableOpacity,
+  RefreshControl, ActivityIndicator, NativeSyntheticEvent,
+  NativeScrollEvent, ActionSheetIOS
+} from 'react-native';
 import { ScrollView, Box, Button, Image, Flex, FlatList, Fab } from 'native-base';
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
+import { useThrottleFn } from 'ahooks';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -76,12 +82,25 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
     </View>
   }
 
+  /**
+   * throttle set visible backTop
+   */
+  const { run: handleVisibleBackTop } = useThrottleFn(
+    (value: boolean) => {
+      setVisibleBackTop(value);
+    },
+    { wait: 300 },
+  );
+
+  /**
+   * 处理滚垱显示返回顶部功能
+   */
   const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { y } = e.nativeEvent.contentOffset
     if (y >= 100) {
-      setVisibleBackTop(true)
+      handleVisibleBackTop(true)
     } else {
-      setVisibleBackTop(false)
+      handleVisibleBackTop(false)
     }
   }, [])
 
