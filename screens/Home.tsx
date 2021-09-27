@@ -20,9 +20,12 @@ import { RootTabScreenProps } from '../types';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { fetchCosplayAPI } from '../helpers/index'
 import { ImageDataState } from '../typings';
+import { storeSet, storeGet, storeRemove } from '../utils/storage'
+import { isEmpty, uniqBy } from 'lodash';
 
 const FailImageUrl = "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
 const {width, height, scale} = Dimensions.get('window');
+const KEY_LOCK_BOOKMARKS = 'LOCK_BOOKMARKS'
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -104,11 +107,13 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
             <Text style={{ color: '#fff', marginTop: 4 }}>{currentIndex}下载</Text>
           </StyledViewFooterItem>
         </Pressable>
-        <StyledViewFooterItem alignItems="center" justifyContent="center">
-          <FontAwesome size={16} name="heart" color={'#fff'} />
-          {/* <FontAwesome size={16} name="heart-o" color={'#fff'} /> */}
-          <Text style={{ color: '#fff', marginTop: 4 }}>喜欢</Text>
-        </StyledViewFooterItem>
+        <Pressable onPress={() => handleBookmark(imageData[currentIndex])}>
+          <StyledViewFooterItem alignItems="center" justifyContent="center">
+            <FontAwesome size={16} name="heart" color={'#fff'} />
+            {/* <FontAwesome size={16} name="heart-o" color={'#fff'} /> */}
+            <Text style={{ color: '#fff', marginTop: 4 }}>喜欢</Text>
+          </StyledViewFooterItem>
+        </Pressable>
         <Pressable onPress={handleShare}>
           <StyledViewFooterItem alignItems="center" justifyContent="center">
             <FontAwesome size={16} name="share" color={'#fff'} />
@@ -264,6 +269,31 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
       } catch (error) {
         console.log('error', error)
         Alert.alert('Save failed')
+      }
+    }, [])
+
+    /**
+     * Handle bookmark
+     *
+     */
+    // TODO：upgrade
+    const handleBookmark = useCallback(
+      async (val: ImageDataState) => {
+        const _value = { url: val.url }
+
+        const res = await storeGet(KEY_LOCK_BOOKMARKS)
+        let data = res ? JSON.parse(res) : []
+        console.log('data', data)
+
+        if (isEmpty(data)) {
+          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify([_value]))
+          Alert.alert('Success')
+        } else {
+          // storeRemove(KEY_LOCK_BOOKMARKS)
+
+          data.push(_value)
+          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify(data))
+          Alert.alert('Success')
       }
     }, [])
 
