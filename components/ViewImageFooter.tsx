@@ -84,7 +84,7 @@ const ViewImageFooter: React.FC<Props> = ({ imageData, currentIndex }) => {
       <Pressable onPress={() => handleDownload(imageData[currentIndex].url)}>
         <StyledViewFooterItem alignItems="center" justifyContent="center">
           <FontAwesome size={16} name="download" color={'#fff'} />
-          <Text style={{ color: '#fff', marginTop: 4 }}>{currentIndex}下载</Text>
+          <Text style={{ color: '#fff', marginTop: 4 }}>下载</Text>
         </StyledViewFooterItem>
       </Pressable>
       <Pressable onPress={() => handleBookmark(imageData[currentIndex])}>
