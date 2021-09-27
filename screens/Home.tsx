@@ -3,7 +3,8 @@ import {
   StyleSheet, Button as ButtonNative, Image as ImageNative,
   Modal, Alert, Pressable, TouchableOpacity,
   RefreshControl, ActivityIndicator, NativeSyntheticEvent,
-  NativeScrollEvent, ActionSheetIOS
+  NativeScrollEvent, ActionSheetIOS, TouchableWithoutFeedback,
+  Dimensions
 } from 'react-native';
 import { ScrollView, Box, Button, Image, Flex, FlatList, Fab } from 'native-base';
 import styled from 'styled-components';
@@ -16,6 +17,9 @@ import { RootTabScreenProps } from '../types';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { fetchCosplayAPI } from '../helpers/index'
 import { ImageDataState } from '../typings';
+
+const FailImageUrl = "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
+const {width, height, scale} = Dimensions.get('window');
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -71,7 +75,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
   }, [modalVisible, modalImageIndex])
 
   // more load components
-  const renderLoadMoreView = () => {
+  const RenderLoadMoreView = () => {
     return <View style={styles.loadMore}>
       <ActivityIndicator
         style={styles.indicator}
@@ -80,6 +84,33 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
       />
       <Text>Loading...</Text>
     </View>
+  }
+
+  /**
+   * View Image Footer Component
+   * @param currentIndex
+   * @returns
+   */
+  const ViewImageFooter = (currentIndex: number) => {
+    return (
+      <StyledViewFooterWrapper style={{ width: width, height: 60 }} direction="row" alignItems="center" justifyContent="center">
+        <StyledViewFooterItem alignItems="center" justifyContent="center">
+          <FontAwesome size={16} name="download" color={'#fff'} />
+          <Text style={{ color: '#fff', marginTop: 4 }}>{currentIndex}下载</Text>
+        </StyledViewFooterItem>
+        <StyledViewFooterItem alignItems="center" justifyContent="center">
+          <FontAwesome size={16} name="heart" color={'#fff'} />
+          {/* <FontAwesome size={16} name="heart-o" color={'#fff'} /> */}
+          <Text style={{ color: '#fff', marginTop: 4 }}>喜欢</Text>
+        </StyledViewFooterItem>
+        <Pressable onPress={handleShare}>
+          <StyledViewFooterItem alignItems="center" justifyContent="center">
+            <FontAwesome size={16} name="share" color={'#fff'} />
+            <Text style={{ color: '#fff', marginTop: 4 }}>分享</Text>
+          </StyledViewFooterItem>
+        </Pressable>
+      </StyledViewFooterWrapper>
+    )
   }
 
   /**
@@ -104,6 +135,29 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
     }
   }, [])
 
+  /**
+   * handle view image share
+   */
+  const handleShare = useCallback(() => {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: ["Cancel", "Generate", "Reset"],
+        destructiveButtonIndex: 2,
+        cancelButtonIndex: 0,
+        // userInterfaceStyle: 'dark'
+      },
+      buttonIndex => {
+        if (buttonIndex === 0) {
+          // cancel action
+        } else if (buttonIndex === 1) {
+          Alert.alert('Generate')
+        } else if (buttonIndex === 2) {
+          Alert.alert('Reset')
+        }
+      }
+    );
+  }, [])
+
   // go top
   const goToTop = useCallback(() => {
     refFlatList.current.scrollToOffset({ offset: 0 });
@@ -119,7 +173,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        ListFooterComponent={() => renderLoadMoreView()}
+        ListFooterComponent={() => RenderLoadMoreView()}
         onEndReached={() => fetchCosplayMore()}
         onScroll={handleScroll}
         renderItem={({ item, index }) => (
@@ -139,7 +193,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
               width="100%"
               height="300px"
               fallbackSource={{
-                uri: "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
+                uri: FailImageUrl
               }}
             />
           </StyledPressable>
@@ -150,7 +204,14 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
           Alert.alert("Modal has been closed.");
           setModalVisible(false);
         }}>
-        <ImageViewer imageUrls={imageData} onClick={() => setModalVisible(false)} index={modalImageIndex} />
+        <ImageViewer
+          imageUrls={imageData}
+          onClick={() => setModalVisible(false)}
+          index={modalImageIndex}
+          failImageSource={{ url: FailImageUrl }}
+          onSave={(url) => { console.log('rul', url) }}
+          renderFooter={ViewImageFooter}
+        />
       </Modal>
 
       {
@@ -201,4 +262,15 @@ const StyledPressable = styled(Pressable)`
   width: 50%;
   height: 300px;
   background-color: #f1f1f1;
+`;
+
+const StyledViewFooterWrapper = styled(Flex)`
+  background-color: rgba(255, 255, 255, .1);
+  margin-bottom: 40px;
+`;
+const StyledViewFooterItem = styled(Flex)`
+  width: 60px;
+  height: 60px;
+  margin: 0 20px;
+  padding: 10px 0;
 `;
