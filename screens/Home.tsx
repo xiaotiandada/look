@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { StyleSheet, Button as ButtonNative, Image as ImageNative, Modal, Alert, Pressable, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { StyleSheet, Button as ButtonNative, Image as ImageNative, Modal, Alert, Pressable, TouchableOpacity, RefreshControl, ActivityIndicator, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { ScrollView, Box, Button, Image, Flex, FlatList, Fab } from 'native-base';
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
@@ -12,12 +12,13 @@ import { fetchCosplayAPI } from '../helpers/index'
 import { ImageDataState } from '../typings';
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>) {
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalImageIndex, setModalImageIndex] = useState(0);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [modalImageIndex, setModalImageIndex] = useState<number>(0);
   const [imageData, setImageData] = useState<ImageDataState[]>([] as ImageDataState[]);
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   // TODO: type fix
   const refFlatList = useRef<any>(null);
+  const [visibleBackTop, setVisibleBackTop] = useState<boolean>(false)
 
   // refresh
   const onRefresh = useCallback(
@@ -75,6 +76,15 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
     </View>
   }
 
+  const handleScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { y } = e.nativeEvent.contentOffset
+    if (y >= 100) {
+      setVisibleBackTop(true)
+    } else {
+      setVisibleBackTop(false)
+    }
+  }, [])
+
   // go top
   const goToTop = useCallback(() => {
     refFlatList.current.scrollToOffset({ offset: 0 });
@@ -86,14 +96,15 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
         ref={refFlatList}
         numColumns={2}
         data={imageData}
+        keyExtractor={(item, index) => `key${index}-${item.url}`}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListFooterComponent={() => renderLoadMoreView()}
         onEndReached={() => fetchCosplayMore()}
+        onScroll={handleScroll}
         renderItem={({ item, index }) => (
           <StyledPressable
-            key={`key${index}-${item.url}`}
             style={{
               marginRight: index % 2 === 0 ? 5 : 0,
               marginLeft: index % 2 !== 0 ? 5 : 0,
@@ -108,6 +119,9 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
               alt="Alternate Text"
               width="100%"
               height="300px"
+              fallbackSource={{
+                uri: "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
+              }}
             />
           </StyledPressable>
         )} />
@@ -120,17 +134,21 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
         <ImageViewer imageUrls={imageData} onClick={() => setModalVisible(false)} index={modalImageIndex} />
       </Modal>
 
-      <Fab
-        position="absolute"
-        size="sm"
-        right={'20px'}
-        bottom={'100px'}
-        onPress={goToTop}
-        colorScheme="indigo"
-        icon={
-          <FontAwesome size={24} name="arrow-up" color={'#fff'} />
-        }
-      />
+      {
+        visibleBackTop
+          ? <Fab
+            position="absolute"
+            size="sm"
+            right={'20px'}
+            bottom={'100px'}
+            onPress={goToTop}
+            colorScheme="indigo"
+            icon={
+              <FontAwesome size={24} name="arrow-up" color={'#fff'} />
+            }
+          />
+          : null
+      }
     </View>
   );
 }
@@ -162,6 +180,6 @@ const styles = StyleSheet.create({
 
 const StyledPressable = styled(Pressable)`
   width: 50%;
-  height: 300;
+  height: 300px;
   background-color: #f1f1f1;
 `;
