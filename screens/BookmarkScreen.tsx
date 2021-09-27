@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
 const StyledPressable = styled(Pressable)`
   width: 50%;
   height: 300px;
-  background-color: #f1f1f1;
+  background-color: #7a7a7a;
 `;
 
 const StyledViewFooterWrapper = styled(Flex)`

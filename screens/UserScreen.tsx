@@ -42,6 +42,7 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
       <StyledUser alignItems="center" justifyContent="flex-start" direction="row">
         <Avatar
           bg="cyan.500"
+          size="md"
           source={{
             uri: "https://avatars.githubusercontent.com/u/24250627?v=4",
           }}
@@ -97,7 +98,7 @@ var styles = StyleSheet.create({
 const StyledWrapper = styled(View)`
   flex: 1;
   padding: 20px;
-  background-color: #f0ecf3;
+  background-color: #fafafa;
   position: relative;
 `;
 
