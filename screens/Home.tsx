@@ -4,12 +4,15 @@ import {
   Modal, Alert, Pressable, TouchableOpacity,
   RefreshControl, ActivityIndicator, NativeSyntheticEvent,
   NativeScrollEvent, ActionSheetIOS, TouchableWithoutFeedback,
-  Dimensions
+  Dimensions, Platform
 } from 'react-native';
-import { ScrollView, Box, Button, Image, Flex, FlatList, Fab } from 'native-base';
+import { ScrollView, Box, Button, Image, Flex, FlatList, Fab, useToast } from 'native-base';
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
 import { useThrottleFn } from 'ahooks';
+import * as MediaLibrary from 'expo-media-library';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -29,6 +32,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
   // TODO: type fix
   const refFlatList = useRef<any>(null);
   const [visibleBackTop, setVisibleBackTop] = useState<boolean>(false)
+  const toast = useToast();
 
   // refresh
   const onRefresh = useCallback(
@@ -94,10 +98,12 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
   const ViewImageFooter = (currentIndex: number) => {
     return (
       <StyledViewFooterWrapper style={{ width: width, height: 60 }} direction="row" alignItems="center" justifyContent="center">
-        <StyledViewFooterItem alignItems="center" justifyContent="center">
-          <FontAwesome size={16} name="download" color={'#fff'} />
-          <Text style={{ color: '#fff', marginTop: 4 }}>{currentIndex}下载</Text>
-        </StyledViewFooterItem>
+        <Pressable onPress={() => handleDownload(imageData[currentIndex].url)}>
+          <StyledViewFooterItem alignItems="center" justifyContent="center">
+            <FontAwesome size={16} name="download" color={'#fff'} />
+            <Text style={{ color: '#fff', marginTop: 4 }}>{currentIndex}下载</Text>
+          </StyledViewFooterItem>
+        </Pressable>
         <StyledViewFooterItem alignItems="center" justifyContent="center">
           <FontAwesome size={16} name="heart" color={'#fff'} />
           {/* <FontAwesome size={16} name="heart-o" color={'#fff'} /> */}
@@ -162,6 +168,104 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
   const goToTop = useCallback(() => {
     refFlatList.current.scrollToOffset({ offset: 0 });
   }, [refFlatList])
+
+  /**
+   * Handle View Image Download
+   */
+  const handleDownload = useCallback(
+    async (url: string) => {
+      // permissionsResult Object {
+      //   "accessPrivileges": "none",
+      //   "canAskAgain": true,
+      //   "expires": "never",
+      //   "granted": false,
+      //   "status": "undetermined",
+      // }
+      // permissionsResult Object {
+      //   "accessPrivileges": "all",
+      //   "canAskAgain": true,
+      //   "expires": "never",
+      //   "granted": true,
+      //   "status": "granted",
+      // }
+      // permissionsResult Object {
+      //   "accessPrivileges": "none",
+      //   "canAskAgain": false,
+      //   "expires": "never",
+      //   "granted": false,
+      //   "status": "denied",
+      // }
+
+      // TODO: need Test
+      // const permissionsResult = await MediaLibrary.getPermissionsAsync()
+      // console.log('permissionsResult', permissionsResult)
+
+      // Get permission
+      // if (permissionsResult.accessPrivileges === 'none' && !permissionsResult.granted) {
+
+      //   if (permissionsResult.canAskAgain) {
+      //     await MediaLibrary.requestPermissionsAsync()
+      //   } else {
+      //     await MediaLibrary.presentPermissionsPickerAsync()
+      //   }
+
+      //   const _permissionsResult = await MediaLibrary.getPermissionsAsync()
+      //   if (_permissionsResult.accessPrivileges === 'none' && !permissionsResult.granted) {
+      //     return
+      //   }
+      // }
+
+      // libraryPermissionResult Object {
+      //   "accessPrivileges": "none",
+      //   "canAskAgain": false,
+      //   "expires": "never",
+      //   "granted": false,
+      //   "status": "denied",
+      // }
+
+      if (Platform.OS !== 'web') {
+        const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          // Alert.alert('Sorry, we need media library permissions to make this work!');
+          // return
+        }
+      } else {
+        console.log('no support web')
+        return
+      }
+
+      const libraryPermissionResult = await ImagePicker.getMediaLibraryPermissionsAsync()
+      console.log('libraryPermissionResult', libraryPermissionResult)
+      // ImagePicker.requestMediaLibraryPermissionsAsync(writeOnly)
+
+      // Get permission
+      if (libraryPermissionResult.accessPrivileges === 'none' && libraryPermissionResult.status !== 'granted') {
+        await ImagePicker.requestMediaLibraryPermissionsAsync(true)
+
+        const _libraryPermissionResult = await ImagePicker.getMediaLibraryPermissionsAsync()
+        console.log('_libraryPermissionResult', _libraryPermissionResult)
+
+        if (_libraryPermissionResult.accessPrivileges === 'none' && _libraryPermissionResult.status !== 'granted') {
+          return
+        }
+      }
+
+      // Save
+      try {
+        await MediaLibrary.saveToLibraryAsync(encodeURI(url))
+        // TODO: no show （maybe is z-index ???)
+        // toast.show({
+        //   description: "Saved successfully",
+        //   placement: "top",
+        //   status: 'success'
+        // })
+        Alert.alert('Saved successfully')
+
+      } catch (error) {
+        console.log('error', error)
+        Alert.alert('Save failed')
+      }
+    }, [])
 
   return (
     <View style={styles.container}>
