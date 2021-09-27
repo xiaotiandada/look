@@ -10,9 +10,6 @@ import { ScrollView, Box, Button, Image, Flex, FlatList, Fab, useToast } from 'n
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
 import { useThrottleFn } from 'ahooks';
-import * as MediaLibrary from 'expo-media-library';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -29,7 +26,7 @@ const FailImageUrl = "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.p
 const {width, height, scale} = Dimensions.get('window');
 const KEY_LOCK_BOOKMARKS = 'LOCK_BOOKMARKS'
 
-export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>) {
+export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalImageIndex, setModalImageIndex] = useState<number>(0);
   const [imageData, setImageData] = useState<ImageDataState[]>([] as ImageDataState[]);
@@ -44,33 +41,22 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
   const onRefresh = useCallback(
     async () => {
       setRefreshing(true);
-      await fetchCosplay()
+      await fetchBookmarks()
       setRefreshing(false)
     }, []);
 
   /**
    * fetch cosplay
    */
-  const fetchCosplay = useCallback(
+  const fetchBookmarks = useCallback(
     async () => {
-      const data = await fetchCosplayAPI()
-      if (data) {
-        const list = data.map(i => ({ url: i }))
-        setImageData(list)
-      }
-    }, [imageData])
-
-  const fetchCosplayMore = useCallback(
-    async () => {
-      const data = await fetchCosplayAPI()
-      if (data) {
-        const list = data.map(i => ({ url: i }))
-        setImageData(imageData.concat(list))
-      }
+      const res = await storeGet(KEY_LOCK_BOOKMARKS)
+      const data: ImageDataState[] = res ? JSON.parse(res) : []
+      setImageData(data)
     }, [imageData])
 
   useEffect(() => {
-    fetchCosplay()
+    fetchBookmarks()
     return () => {
       setImageData([])
     }
@@ -87,12 +73,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
   // more load components
   const RenderLoadMoreView = () => {
     return <View style={styles.loadMore}>
-      <ActivityIndicator
-        style={styles.indicator}
-        size={"small"}
-        animating={true}
-      />
-      <Text>Loading...</Text>
+      <Text>Not</Text>
     </View>
   }
 
@@ -119,11 +100,58 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
     }
   }, [])
 
+  /**
+   * handle view image share
+   */
+  const handleShare = useCallback(() => {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: ["Cancel", "Generate", "Reset"],
+        destructiveButtonIndex: 2,
+        cancelButtonIndex: 0,
+        // userInterfaceStyle: 'dark'
+      },
+      buttonIndex => {
+        if (buttonIndex === 0) {
+          // cancel action
+        } else if (buttonIndex === 1) {
+          Alert.alert('Generate')
+        } else if (buttonIndex === 2) {
+          Alert.alert('Reset')
+        }
+      }
+    );
+  }, [])
+
   // go top
   const goToTop = useCallback(() => {
     refFlatList.current.scrollToOffset({ offset: 0 });
   }, [refFlatList])
 
+    /**
+     * Handle bookmark
+     *
+     */
+    // TODO：upgrade
+    const handleBookmark = useCallback(
+      async (val: ImageDataState) => {
+        const _value = { url: val.url }
+
+        const res = await storeGet(KEY_LOCK_BOOKMARKS)
+        let data = res ? JSON.parse(res) : []
+        console.log('data', data)
+
+        if (isEmpty(data)) {
+          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify([_value]))
+          Alert.alert('Success')
+        } else {
+          // storeRemove(KEY_LOCK_BOOKMARKS)
+
+          data.push(_value)
+          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify(data))
+          Alert.alert('Success')
+      }
+    }, [])
 
   return (
     <View style={styles.container}>
@@ -136,7 +164,6 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListFooterComponent={() => RenderLoadMoreView()}
-        onEndReached={() => fetchCosplayMore()}
         onScroll={handleScroll}
         renderItem={({ item, index }) => (
           <StyledPressable

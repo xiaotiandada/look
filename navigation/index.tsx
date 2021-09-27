@@ -15,7 +15,7 @@ import useColorScheme from '../hooks/useColorScheme';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import HomeScreen from '../screens/Home';
-import TabTwoScreen from '../screens/TabTwoScreen';
+import Bookmark from '../screens/Bookmark';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 
@@ -86,7 +86,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="Hot"
-        component={TabTwoScreen}
+        component={Bookmark}
         options={{
           title: '关注',
           tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
@@ -94,7 +94,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name="User"
-        component={TabTwoScreen}
+        component={Bookmark}
         options={{
           title: '我的',
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
