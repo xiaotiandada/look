@@ -22,7 +22,7 @@ interface ItemProps {
   url: string
 }
 
-export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
+export default function Bookmark({ navigation }: RootTabScreenProps<'User'>) {
   const toast = useToast();
 
   const ItemData = useMemo((): ItemProps[][] => {
@@ -200,7 +200,7 @@ const StyledWrapper = styled(View)`
 `;
 
 const StyledUser = styled(Flex)`
-  padding: 20px 0;
+  padding: 80px 0 20px;
 `;
 const StyledUserText = styled(Text)`
   color: #fff;
@@ -233,6 +233,6 @@ const StyledBackground = styled(LinearGradient)`
   right: 0;
   top: 0;
   background-color: transparent;
-  height: 160px;
+  height: 220px;
   z-index: -1;
 `;

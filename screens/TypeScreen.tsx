@@ -7,62 +7,17 @@ import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import { fetchCosplayAPI } from '../helpers/index'
 import * as WebBrowser from 'expo-web-browser';
+import { TypeList } from '../config/index'
 
-export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
-
-  const typeList = useMemo(() => {
-    return [
-      {
-        title: '3650000随机API',
-        url: 'https://3650000.xyz',
-        item: [
-          {
-            name: '微博',
-            mode: 1,
-            color: ['#3cd8cc', '#46dfbc']
-          },
-          {
-            name: 'Instagram',
-            mode: 2,
-            color: ['#3cd8cc', '#46dfbc']
-          },
-          {
-            name: 'COS',
-            mode: 3,
-            color: ['#3cd8cc', '#46dfbc']
-          },
-          {
-            name: 'Mtcos',
-            mode: 5,
-            color: ['#3cd8cc', '#46dfbc']
-          },
-          {
-            name: '美腿',
-            mode: 7,
-            color: ['#3cd8cc', '#46dfbc']
-          },
-          {
-            name: 'Coser',
-            mode: 8,
-            color: ['#3cd8cc', '#46dfbc']
-          },
-          {
-            name: '兔玩映画',
-            mode: 9,
-            color: ['#3cd8cc', '#46dfbc']
-          },
-          {
-            name: '随机',
-            mode: 66,
-            color: ['#3cd8cc', '#46dfbc']
-          }
-        ]
-      }
-    ]
-  }, [])
+export default function Bookmark({ navigation }: RootTabScreenProps<'Type'>) {
 
   const handleTitlePressable = (url: string) => {
     WebBrowser.openBrowserAsync(url)
+  }
+
+  const handleNavigation = (mode: number) => {
+    // TODO:
+    navigation.navigate('Detail', { mode } as any)
   }
 
   return (
@@ -78,7 +33,7 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
         }}
       >
         {
-          typeList.map((i, idx) => (
+          TypeList.map((i, idx) => (
             <Fragment key={idx}>
               <StyledTitle>
                 <Pressable onPress={() => handleTitlePressable(i.url)}>
@@ -87,9 +42,12 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
               </StyledTitle>
               {
                 i.item.map((j, idxJ) => (
-                  <StyledItem key={idxJ} colors={j.color}>
-                    <StyledItemText>{j.name}</StyledItemText>
+                  <StyledItem onPress={() => handleNavigation( j.mode )} key={idxJ}>
+                    <StyledItemContent colors={j.color}>
+                      <StyledItemText>{j.name}</StyledItemText>
+                    </StyledItemContent>
                   </StyledItem>
+
                 ))
               }
             </Fragment>
@@ -105,11 +63,15 @@ const StyledWrapper = styled(View)`
   flex: 1;
 `;
 
-const StyledItem = styled(LinearGradient)`
+const StyledItem = styled(Pressable)`
   width: 23%;
   height: 80px;
-  border-radius: 10px;
   margin: 0 1% 10px 1%;
+`
+const StyledItemContent = styled(LinearGradient)`
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;

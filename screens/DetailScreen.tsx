@@ -11,18 +11,39 @@ import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
 import { useThrottleFn } from 'ahooks';
 
-import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
-import { RootTabScreenProps } from '../types';
+import { RootTabScreenProps, RootStackScreenProps } from '../types';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { fetchCosplayAPI } from '../helpers/index'
+import { fetchCosplayAPI, fetchRandomAPI } from '../helpers/index'
 import { ImageDataState } from '../typings';
 import { storeSet, storeGet, storeRemove } from '../utils/storage'
 import { isEmpty, uniqBy } from 'lodash';
+import useSaveImage from '../hooks/useSaveImage'
 import ViewImageFooter from '../components/ViewImageFooter'
 import { KEY_LOCK_BOOKMARKS, FailImageUrl } from '../config/index'
+import { sleep } from '../utils/index'
 
-export default function Bookmark({ navigation }: RootTabScreenProps<'Bookmark'>) {
+const { width, height, scale } = Dimensions.get('window');
+import { TypeList } from '../config/index'
+
+export default function DetailScreen({ navigation, route }: RootStackScreenProps<'Detail'>) {
+  // TDDO:
+  const { mode }: any = route.params;
+
+  useEffect(() => {
+    // TDDO:
+    const list = TypeList[0].item.filter(i => i.mode === mode)
+    console.log('list', list)
+
+    if (!isEmpty(list)) {
+      navigation.setOptions({
+        title: list[0].name
+      })
+    }
+
+  }, [mode])
+
+
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [modalImageIndex, setModalImageIndex] = useState<number>(0);
   const [imageData, setImageData] = useState<ImageDataState[]>([] as ImageDataState[]);
@@ -36,22 +57,42 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Bookmark'>)
   const onRefresh = useCallback(
     async () => {
       setRefreshing(true);
-      await fetchBookmarks()
+      setImageData([])
+      await fetchRandom()
       setRefreshing(false)
     }, []);
 
   /**
    * fetch cosplay
    */
-  const fetchBookmarks = useCallback(
+  const fetchRandom = useCallback(
     async () => {
-      const res = await storeGet(KEY_LOCK_BOOKMARKS)
-      const data: ImageDataState[] = res ? JSON.parse(res) : []
-      setImageData(data.reverse())
+      let list = []
+      for (let i = 0; i < 6; i++) {
+        await sleep(300)
+        const data = await fetchRandomAPI({ mode })
+        if (data) {
+          list.push({ url: data })
+        }
+      }
+      setImageData(list)
+    }, [imageData, mode])
+
+  const fetchRandomMore = useCallback(
+    async () => {
+      let list = []
+      for (let i = 0; i < 6; i++) {
+        await sleep(300)
+        const data = await fetchRandomAPI({ mode })
+        if (data) {
+          list.push({ url: data })
+        }
+      }
+      setImageData(imageData.concat(list))
     }, [imageData])
 
   useEffect(() => {
-    fetchBookmarks()
+    fetchRandom()
     return () => {
       setImageData([])
     }
@@ -68,7 +109,12 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Bookmark'>)
   // more load components
   const RenderLoadMoreView = () => {
     return <View style={styles.loadMore}>
-      <Text>Not</Text>
+      <ActivityIndicator
+        style={styles.indicator}
+        size={"small"}
+        animating={true}
+      />
+      <Text>Loading...</Text>
     </View>
   }
 
@@ -95,36 +141,11 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Bookmark'>)
     }
   }, [])
 
-
   // go top
   const goToTop = useCallback(() => {
     refFlatList.current.scrollToOffset({ offset: 0 });
   }, [refFlatList])
 
-    /**
-     * Handle bookmark
-     *
-     */
-    // TODO：upgrade
-    const handleBookmark = useCallback(
-      async (val: ImageDataState) => {
-        const _value = { url: val.url }
-
-        const res = await storeGet(KEY_LOCK_BOOKMARKS)
-        let data = res ? JSON.parse(res) : []
-        console.log('data', data)
-
-        if (isEmpty(data)) {
-          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify([_value]))
-          Alert.alert('Success')
-        } else {
-          // storeRemove(KEY_LOCK_BOOKMARKS)
-
-          data.push(_value)
-          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify(data))
-          Alert.alert('Success')
-      }
-    }, [])
 
   return (
     <View style={styles.container}>
@@ -137,6 +158,7 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Bookmark'>)
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListFooterComponent={() => RenderLoadMoreView()}
+        onEndReached={() => fetchRandomMore()}
         onScroll={handleScroll}
         renderItem={({ item, index }) => (
           <StyledPressable
