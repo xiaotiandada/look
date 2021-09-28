@@ -14,7 +14,7 @@ import { useThrottleFn } from 'ahooks';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { fetchCosplayAPI } from '../helpers/index'
+import { fetchCosplayAPI, fetchRandomAPI } from '../helpers/index'
 import { ImageDataState } from '../typings';
 import { storeSet, storeGet, storeRemove } from '../utils/storage'
 import { isEmpty, uniqBy } from 'lodash';
@@ -48,6 +48,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
    */
   const fetchCosplay = useCallback(
     async () => {
+      // 可以聚合多个 api 数据 然后”洗牌“
+
       const data = await fetchCosplayAPI()
       if (data) {
         const list = data.map(i => ({ url: i }))
