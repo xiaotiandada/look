@@ -95,28 +95,6 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
     }
   }, [])
 
-  /**
-   * handle view image share
-   */
-  const handleShare = useCallback(() => {
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        options: ["Cancel", "Generate", "Reset"],
-        destructiveButtonIndex: 2,
-        cancelButtonIndex: 0,
-        // userInterfaceStyle: 'dark'
-      },
-      buttonIndex => {
-        if (buttonIndex === 0) {
-          // cancel action
-        } else if (buttonIndex === 1) {
-          Alert.alert('Generate')
-        } else if (buttonIndex === 2) {
-          Alert.alert('Reset')
-        }
-      }
-    );
-  }, [])
 
   // go top
   const goToTop = useCallback(() => {
