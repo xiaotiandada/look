@@ -20,6 +20,11 @@ const linking: LinkingOptions<RootStackParamList> = {
               HomeScreen: 'home',
             },
           },
+          Type: {
+            screens: {
+              TypeScreenn: 'type',
+            },
+          },
           Bookmark: {
             screens: {
               BookmarkScreenn: 'bookmark',

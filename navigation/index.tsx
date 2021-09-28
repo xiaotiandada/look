@@ -16,6 +16,7 @@ import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import HomeScreen from '../screens/HomeScreen';
 import BookmarkScreen from '../screens/BookmarkScreen';
+import TypeScreen from '../screens/TypeScreen';
 import UserScreen from '../screens/UserScreen';
 import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
@@ -59,7 +60,7 @@ function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="User"
+      initialRouteName="Type"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}>
@@ -84,6 +85,14 @@ function BottomTabNavigator() {
             </Pressable>
           ),
         })}
+      />
+      <BottomTab.Screen
+        name="Type"
+        component={TypeScreen}
+        options={{
+          title: '分类',
+          tabBarIcon: ({ color }) => <TabBarIcon name="th" color={color} />,
+        }}
       />
       <BottomTab.Screen
         name="Bookmark"
