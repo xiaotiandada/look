@@ -225,15 +225,5 @@ const StyledPressable = styled(Pressable)`
   width: 50%;
   height: 300px;
   background-color: #7a7a7a;
-`;
-
-const StyledViewFooterWrapper = styled(Flex)`
-  background-color: rgba(255, 255, 255, .1);
-  margin-bottom: 40px;
-`;
-const StyledViewFooterItem = styled(Flex)`
-  width: 60px;
-  height: 60px;
-  margin: 0 20px;
-  padding: 10px 0;
+  border: 1px solid #eeeeee;
 `;

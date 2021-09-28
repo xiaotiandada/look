@@ -6,6 +6,7 @@
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { TypeListStateKey } from './typings';
 
 declare global {
   namespace ReactNavigation {
@@ -13,11 +14,13 @@ declare global {
   }
 }
 
+export interface DetailProps { key: TypeListStateKey, title?: string, mode?: number, url?: string }
+
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
   Modal: undefined;
   NotFound: undefined;
-  Detail: undefined;
+  Detail: DetailProps;
 };
 
 export type DetaiilStackParamList = {

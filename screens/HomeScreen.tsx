@@ -116,6 +116,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
 
   // go top
   const goToTop = useCallback(() => {
+    // 后来看见的 懒得试
+    // https://reactnavigation.org/docs/use-scroll-to-top
     refFlatList.current.scrollToOffset({ offset: 0 });
   }, [refFlatList])
 
@@ -220,6 +222,7 @@ const StyledPressable = styled(Pressable)`
   width: 50%;
   height: 300px;
   background-color: #7a7a7a;
+  border: 1px solid #eeeeee;
 `;
 
 const StyledViewFooterWrapper = styled(Flex)`

@@ -1,5 +1,5 @@
-import { cosplay, randomAPI } from '../services/api'
-import { RandomAPIState } from '../typings/api'
+import { cosplay, randomAPI, randomGudumibugAPI, randomDmoeAPI, imgRandomAPI } from '../services/api'
+import { RandomAPIState, FetchRandomGudumibugAPIState } from '../typings/api'
 
 /**
  * fetch cosplay api
@@ -50,6 +50,68 @@ export const fetchRandomAPI = async (data: RandomAPIState): Promise<string | und
     if (res.code === 200) {
       return res.url
     }
+
+    return
+  } catch (e) {
+    console.log(e)
+    return
+  }
+}
+
+/**
+ * fetch random api
+ * @param url 
+ * @returns 
+ */
+export const fetchRandomGudumibugAPI = async ({ url }: FetchRandomGudumibugAPIState): Promise<string | undefined> => {
+  try {
+    const res = await randomGudumibugAPI(url, {
+      return: 'json',
+      time: Date.now()
+    })
+    console.log('res', res)
+    return res.imgurl
+
+    return
+  } catch (e) {
+    console.log(e)
+    return
+  }
+}
+
+/**
+ * fetch random api
+ * @param url 
+ * @returns 
+ */
+export const fetchRandomDmoeAPI = async ({ url }: FetchRandomGudumibugAPIState): Promise<string | undefined> => {
+  try {
+    const res = await randomDmoeAPI(url, {
+      return: 'json',
+      time: Date.now()
+    })
+    console.log('res', res)
+    return res.imgurl
+
+    return
+  } catch (e) {
+    console.log(e)
+    return
+  }
+}
+
+/**
+ * fetch random api
+ * @param url 
+ * @returns 
+ */
+export const fetchImgRandomAPIAPI = async ({ url }: FetchRandomGudumibugAPIState): Promise<string | undefined> => {
+  try {
+    const res = await imgRandomAPI(url, {
+      time: Date.now()
+    })
+    console.log('res', res)
+    return res.imgurl
 
     return
   } catch (e) {

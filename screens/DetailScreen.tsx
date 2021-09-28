@@ -14,7 +14,7 @@ import { useThrottleFn } from 'ahooks';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps, RootStackScreenProps } from '../types';
 import ImageViewer from 'react-native-image-zoom-viewer';
-import { fetchCosplayAPI, fetchRandomAPI } from '../helpers/index'
+import { fetchCosplayAPI, fetchRandomAPI, fetchRandomGudumibugAPI, fetchRandomDmoeAPI, fetchImgRandomAPIAPI } from '../helpers/index'
 import { ImageDataState } from '../typings';
 import { storeSet, storeGet, storeRemove } from '../utils/storage'
 import { isEmpty, uniqBy } from 'lodash';
@@ -27,21 +27,14 @@ const { width, height, scale } = Dimensions.get('window');
 import { TypeList } from '../config/index'
 
 export default function DetailScreen({ navigation, route }: RootStackScreenProps<'Detail'>) {
-  // TDDO:
-  const { mode }: any = route.params;
+  const { key, title, mode, url } = route.params;
 
   useEffect(() => {
-    // TDDO:
-    const list = TypeList[0].item.filter(i => i.mode === mode)
-    console.log('list', list)
+    navigation.setOptions({
+      title: title
+    })
 
-    if (!isEmpty(list)) {
-      navigation.setOptions({
-        title: list[0].name
-      })
-    }
-
-  }, [mode])
+  }, [title])
 
 
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -67,10 +60,31 @@ export default function DetailScreen({ navigation, route }: RootStackScreenProps
    */
   const fetchRandom = useCallback(
     async () => {
+
+      // no loop
+      if (key === 'imgapi.cn' && url?.includes('cos.php')) {
+        const data = await fetchCosplayAPI()
+        if (data) {
+          const list = data.map(i => ({ url: i }))
+          setImageData(list)
+        }
+        return
+      }
+
       let list = []
+      // http 429 process
       for (let i = 0; i < 6; i++) {
         await sleep(300)
-        const data = await fetchRandomAPI({ mode })
+        let data
+        if (key === '3650000.xyz' && mode) {
+          data = await fetchRandomAPI({ mode })
+        } else if (key === 'gudumibug.top' && url) {
+          data = await fetchRandomGudumibugAPI({ url })
+        } else if (key === 'dmoe.cc' && url) {
+          data = await fetchRandomDmoeAPI({ url })
+        } else if (key === 'imgapi.cn' && url) {
+          data = await fetchImgRandomAPIAPI({ url })
+        }
         if (data) {
           list.push({ url: data })
         }
@@ -80,10 +94,30 @@ export default function DetailScreen({ navigation, route }: RootStackScreenProps
 
   const fetchRandomMore = useCallback(
     async () => {
+      // no loop
+      if (key === 'imgapi.cn' && url?.includes('cos.php')) {
+        const data = await fetchCosplayAPI()
+        if (data) {
+          const list = data.map(i => ({ url: i }))
+          setImageData(imageData.concat(list))
+        }
+        return
+      }
+
       let list = []
+      // http 429 process
       for (let i = 0; i < 6; i++) {
         await sleep(300)
-        const data = await fetchRandomAPI({ mode })
+        let data
+        if (key === '3650000.xyz' && mode) {
+          data = await fetchRandomAPI({ mode })
+        } else if (key === 'gudumibug.top' && url) {
+          data = await fetchRandomGudumibugAPI({ url })
+        } else if (key === 'dmoe.cc' && url) {
+          data = await fetchRandomDmoeAPI({ url })
+        } else if (key === 'imgapi.cn' && url) {
+          data = await fetchImgRandomAPIAPI({ url })
+        }
         if (data) {
           list.push({ url: data })
         }
@@ -247,15 +281,5 @@ const StyledPressable = styled(Pressable)`
   width: 50%;
   height: 300px;
   background-color: #7a7a7a;
-`;
-
-const StyledViewFooterWrapper = styled(Flex)`
-  background-color: rgba(255, 255, 255, .1);
-  margin-bottom: 40px;
-`;
-const StyledViewFooterItem = styled(Flex)`
-  width: 60px;
-  height: 60px;
-  margin: 0 20px;
-  padding: 10px 0;
+  border: 1px solid #eeeeee;
 `;

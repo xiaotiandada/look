@@ -4,7 +4,7 @@ import { ScrollView, Box, Button, Image, Flex, FlatList, Fab, useToast } from 'n
 import styled from 'styled-components';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, View } from '../components/Themed';
-import { RootTabScreenProps } from '../types';
+import { RootTabScreenProps, DetailProps } from '../types';
 import { fetchCosplayAPI } from '../helpers/index'
 import * as WebBrowser from 'expo-web-browser';
 import { TypeList } from '../config/index'
@@ -15,9 +15,8 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Type'>) {
     WebBrowser.openBrowserAsync(url)
   }
 
-  const handleNavigation = (mode: number) => {
-    // TODO:
-    navigation.navigate('Detail', { mode } as any)
+  const handleNavigation = ( params: DetailProps ) => {
+    navigation.navigate('Detail', params)
   }
 
   return (
@@ -42,7 +41,12 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Type'>) {
               </StyledTitle>
               {
                 i.item.map((j, idxJ) => (
-                  <StyledItem onPress={() => handleNavigation( j.mode )} key={idxJ}>
+                  <StyledItem onPress={() => handleNavigation( {
+                    key: i.key,
+                    title: j?.name || 'Detail',
+                    mode: j?.mode,
+                    url: j?.url
+                  } )} key={idxJ}>
                     <StyledItemContent colors={j.color}>
                       <StyledItemText>{j.name}</StyledItemText>
                     </StyledItemContent>
