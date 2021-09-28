@@ -16,9 +16,7 @@ import { RootTabScreenProps, RootStackScreenProps } from '../types';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import { fetchCosplayAPI, fetchRandomAPI, fetchRandomGudumibugAPI, fetchRandomDmoeAPI, fetchImgRandomAPIAPI } from '../helpers/index'
 import { ImageDataState } from '../typings';
-import { storeSet, storeGet, storeRemove } from '../utils/storage'
 import { isEmpty, uniqBy } from 'lodash';
-import useSaveImage from '../hooks/useSaveImage'
 import ViewImageFooter from '../components/ViewImageFooter'
 import { KEY_LOCK_BOOKMARKS, FailImageUrl } from '../config/index'
 import { sleep } from '../utils/index'
@@ -281,5 +279,5 @@ const StyledPressable = styled(Pressable)`
   width: 50%;
   height: 300px;
   background-color: #7a7a7a;
-  border: 1px solid #eeeeee;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 `;

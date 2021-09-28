@@ -18,7 +18,7 @@ export interface DetailProps { key: TypeListStateKey, title?: string, mode?: num
 
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
-  Modal: undefined;
+  Hello: undefined;
   NotFound: undefined;
   Detail: DetailProps;
 };

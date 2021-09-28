@@ -224,7 +224,7 @@ const StyledPressable = styled(Pressable)`
   width: 50%;
   height: 300px;
   background-color: #7a7a7a;
-  border: 1px solid #eeeeee;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 `;
 
 const StyledViewFooterWrapper = styled(Flex)`
