@@ -10,11 +10,7 @@ import { ScrollView, Box, Button, Image, Flex, FlatList, Fab, useToast } from 'n
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
 import { useThrottleFn } from 'ahooks';
-import * as MediaLibrary from 'expo-media-library';
-import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 
-import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -24,10 +20,9 @@ import { storeSet, storeGet, storeRemove } from '../utils/storage'
 import { isEmpty, uniqBy } from 'lodash';
 import useSaveImage from '../hooks/useSaveImage'
 import ViewImageFooter from '../components/ViewImageFooter'
+import { KEY_LOCK_BOOKMARKS, FailImageUrl } from '../config/index'
 
-const FailImageUrl = "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
 const {width, height, scale} = Dimensions.get('window');
-const KEY_LOCK_BOOKMARKS = 'LOCK_BOOKMARKS'
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -172,6 +167,7 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'Home'>)
           index={modalImageIndex}
           failImageSource={{ url: FailImageUrl }}
           onSave={(url) => { console.log('rul', url) }}
+          onChange={(index?: number): void => { index && handleImageShow(index) }}
           renderFooter={() => <ViewImageFooter imageData={imageData} currentIndex={modalImageIndex} />}
         />
       </Modal>

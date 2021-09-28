@@ -20,9 +20,7 @@ import { ImageDataState } from '../typings';
 import { storeSet, storeGet, storeRemove } from '../utils/storage'
 import { isEmpty, uniqBy } from 'lodash';
 import ViewImageFooter from '../components/ViewImageFooter'
-
-const FailImageUrl = "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
-const KEY_LOCK_BOOKMARKS = 'LOCK_BOOKMARKS'
+import { KEY_LOCK_BOOKMARKS, FailImageUrl } from '../config/index'
 
 export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -196,6 +194,7 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
           index={modalImageIndex}
           failImageSource={{ url: FailImageUrl }}
           onSave={(url) => { console.log('rul', url) }}
+          onChange={(index?: number): void => { index && handleImageShow(index) }}
           renderFooter={() => <ViewImageFooter imageData={imageData} currentIndex={modalImageIndex} />}
         />
       </Modal>

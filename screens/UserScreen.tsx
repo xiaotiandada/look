@@ -1,41 +1,142 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useMemo, useState, useRef, Fragment } from 'react';
 import {
   StyleSheet, Button as ButtonNative, Image as ImageNative,
   Modal, Alert, Pressable, TouchableOpacity,
-  RefreshControl, ActivityIndicator, NativeSyntheticEvent,
-  NativeScrollEvent, ActionSheetIOS, TouchableWithoutFeedback,
-  Dimensions, Platform
 } from 'react-native';
-import { Avatar, Box, Spacer, Image, Flex, FlatList, Center, useToast } from 'native-base';
+import { Avatar, Box, Spacer, Image, Flex, FlatList, useToast } from 'native-base';
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
-import { useThrottleFn } from 'ahooks';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as WebBrowser from 'expo-web-browser';
 
-import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
-import ImageViewer from 'react-native-image-zoom-viewer';
-import { fetchCosplayAPI } from '../helpers/index'
-import { ImageDataState } from '../typings';
-import { storeSet, storeGet, storeRemove } from '../utils/storage'
-import { isEmpty, uniqBy } from 'lodash';
-import useSaveImage from '../hooks/useSaveImage'
-import ViewImageFooter from '../components/ViewImageFooter'
+import { storeSet, storeClear, storeRemove } from '../utils/storage'
 
-const FailImageUrl = "http://whhlyt.hunan.gov.cn/whhlyt/xhtml/img/pc-icon_none.png"
-const { width, height, scale } = Dimensions.get('window');
-const KEY_LOCK_BOOKMARKS = 'LOCK_BOOKMARKS'
+import { KEY_LOCK_BOOKMARKS } from '../config/index'
+
+interface ItemProps {
+  key: string,
+  icon: 'github' | 'question' | 'cloud' | 'heart' | 'book' | 'star' | 'info' | 'refresh' | 'heart-o' | 'remove',
+  text: string,
+  url: string
+}
 
 export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [modalImageIndex, setModalImageIndex] = useState<number>(0);
-  const [imageData, setImageData] = useState<ImageDataState[]>([] as ImageDataState[]);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  // TODO: type fix
-  const refFlatList = useRef<any>(null);
-  const [visibleBackTop, setVisibleBackTop] = useState<boolean>(false)
   const toast = useToast();
+
+  const ItemData = useMemo((): ItemProps[][] => {
+    return [
+      [
+        {
+          key: 'github',
+          icon: 'github',
+          text: 'Github',
+          url: 'https://github.com/xiaotiandada/look',
+        },
+        {
+          key: 'question',
+          icon: 'question',
+          text: '问题反馈',
+          url: 'https://github.com/xiaotiandada/look/issues',
+        },
+        {
+          key: 'info',
+          icon: 'info',
+          text: '信息',
+          url: 'https://github.com/xiaotiandada/xiaotiandada/blob/master/README.md',
+        },
+        {
+          key: 'star',
+          icon: 'star',
+          text: 'Star',
+          url: 'https://github.com/xiaotiandada/look',
+        }
+      ],
+      [
+        {
+          key: 'book',
+          icon: 'book',
+          text: 'Blog',
+          url: 'https://github.com/xiaotiandada/blog/issues',
+        },
+        {
+          key: 'github',
+          icon: 'github',
+          text: 'Moyu',
+          url: 'https://github.com/xiaotiandada/moyu',
+        },
+        {
+          key: 'github',
+          icon: 'github',
+          text: 'Issues',
+          url: 'https://github.com/xiaotiandada/issues',
+        },
+        {
+          key: 'github',
+          icon: 'github',
+          text: 'Cui',
+          url: 'https://github.com/xiaotiandada/cui',
+        },
+      ],
+      [
+        {
+          key: 'cloud',
+          icon: 'cloud',
+          text: '同步数据',
+          url: '',
+        },
+        {
+          key: 'remove',
+          icon: 'remove',
+          text: '清除缓存',
+          url: '',
+        },
+        {
+          key: 'heart-o',
+          icon: 'heart-o',
+          text: '清空关注',
+          url: '清空关注',
+        },
+        {
+          key: 'refresh',
+          icon: 'refresh',
+          text: 'Other',
+          url: '',
+        }
+      ]
+    ]
+  }, [])
+
+  /**
+   * Handle Item Pressable
+   * @param item
+   */
+  const handleItemPressable = (item: ItemProps) => {
+    if (item.key === 'cloud') {
+      Alert.alert('development')
+    } else if (item.key === 'remove') {
+      storeClear()
+      toast.show({
+        description: "success",
+        placement: 'top',
+        duration: 300
+      })
+    } else if (item.key === 'heart-o') {
+      storeRemove(KEY_LOCK_BOOKMARKS)
+      toast.show({
+        description: "success",
+        placement: 'top',
+        duration: 300
+      })
+    } else if (item.key === 'refresh') {
+      Alert.alert('development')
+    } else if (item.url) {
+      WebBrowser.openBrowserAsync(
+        item.url
+      )
+    }
+  }
 
   return (
     <StyledWrapper>
@@ -50,28 +151,24 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Home'>) {
         <StyledUserText>Xiaotian</StyledUserText>
       </StyledUser>
       {
-        [1, 1, 1, 1].map((i, idx) => (
-          <StyledItem direction="row" alignItems="center" justifyContent="space-between" key={idx} borderRadius={10} >
-            <Center flex="1">
-              <FontAwesome size={20} name="github" color={'#3cd8cc'} />
-              <StyledItemText>Github</StyledItemText>
-            </Center>
-            <Center flex="1">
-              <FontAwesome size={20} name="question" color={'#3cd8cc'} />
-              <StyledItemText>问题反馈</StyledItemText>
-            </Center>
-            <Center flex="1">
-              <FontAwesome size={20} name="cloud" color={'#3cd8cc'} />
-              <StyledItemText>同步数据</StyledItemText>
-            </Center>
-            <Center flex="1">
-              <FontAwesome size={20} name="heart" color={'#3cd8cc'} />
-              <StyledItemText>喜欢项目</StyledItemText>
-            </Center>
+        ItemData.map((i, idx) => (
+          <StyledItem
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            borderRadius={10}
+            key={idx}>
+            {
+              i.map((j, idxJ) => (
+                <StyledItemPressable onPress={() => handleItemPressable(j)} key={idxJ}>
+                  <FontAwesome size={20} name={j.icon} color={'#3cd8cc'} />
+                  <StyledItemText>{j.text}</StyledItemText>
+                </StyledItemPressable>
+              ))
+            }
           </StyledItem>
         ))
       }
-
       <StyledBackground colors={['#3cd8cc', '#46dfbc']} end={{ x: 0, y: 1 }}></StyledBackground>
     </StyledWrapper>
   );
@@ -117,6 +214,12 @@ const StyledItem = styled(Flex)`
   padding: 20px 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, .04);
 `;
+const StyledItemPressable = styled(Pressable)`
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+`
 
 const StyledItemText = styled(Text)`
   color: #7a7a7a;

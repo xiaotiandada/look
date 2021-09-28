@@ -7,16 +7,15 @@ import {
 } from 'react-native';
 import useSaveImage from '../hooks/useSaveImage'
 import { FontAwesome } from "@expo/vector-icons";
-import { ScrollView, Box, Button, Image, Flex, FlatList, Fab, useToast } from 'native-base';
+import { Flex } from 'native-base';
 import { isEmpty, uniqBy } from 'lodash';
 
 import { Text, View } from './Themed';
 import { storeSet, storeGet, storeRemove } from '../utils/storage'
 import { ImageDataState } from '../typings';
+import { KEY_LOCK_BOOKMARKS, FailImageUrl } from '../config/index'
 
 const { width, height, scale } = Dimensions.get('window');
-const KEY_LOCK_BOOKMARKS = 'LOCK_BOOKMARKS'
-
 interface Props {
   imageData: ImageDataState[],
   currentIndex: number

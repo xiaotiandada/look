@@ -49,3 +49,17 @@ export const storeRemove = async (key: string) => {
 
   console.log('Done.')
 }
+
+/**
+ * store clear
+ */
+export const storeClear = async () => {
+  try {
+    await AsyncStorage.clear()
+  } catch(e) {
+    // clear error
+    console.log('e', e)
+  }
+
+  console.log('Done.')
+}
