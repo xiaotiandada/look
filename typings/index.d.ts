@@ -21,3 +21,9 @@ export interface DetailProps {
   mode?: number
   url?: string
 }
+
+
+export interface BookmarkState {
+  url: string,
+  lastTime: number
+}

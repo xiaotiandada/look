@@ -10,6 +10,7 @@ import { ScrollView, Box, Button, Image, Flex, FlatList, Fab, useToast } from 'n
 import styled from 'styled-components';
 import { FontAwesome } from "@expo/vector-icons";
 import { useThrottleFn } from 'ahooks';
+import { useFocusEffect } from '@react-navigation/native';
 
 import EditScreenInfo from '../components/EditScreenInfo';
 import { Text, View } from '../components/Themed';
@@ -31,6 +32,13 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Bookmark'>)
   const refFlatList = useRef<any>(null);
   const [visibleBackTop, setVisibleBackTop] = useState<boolean>(false)
   const toast = useToast();
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetch = () => fetchBookmarks()
+      fetch()
+    }, [])
+  );
 
   // refresh
   const onRefresh = useCallback(
@@ -100,31 +108,6 @@ export default function Bookmark({ navigation }: RootTabScreenProps<'Bookmark'>)
   const goToTop = useCallback(() => {
     refFlatList.current.scrollToOffset({ offset: 0 });
   }, [refFlatList])
-
-    /**
-     * Handle bookmark
-     *
-     */
-    // TODO：upgrade
-    const handleBookmark = useCallback(
-      async (val: ImageDataState) => {
-        const _value = { url: val.url }
-
-        const res = await storeGet(KEY_LOCK_BOOKMARKS)
-        let data = res ? JSON.parse(res) : []
-        console.log('data', data)
-
-        if (isEmpty(data)) {
-          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify([_value]))
-          Alert.alert('Success')
-        } else {
-          // storeRemove(KEY_LOCK_BOOKMARKS)
-
-          data.push(_value)
-          await storeSet(KEY_LOCK_BOOKMARKS, JSON.stringify(data))
-          Alert.alert('Success')
-      }
-    }, [])
 
   return (
     <View style={styles.container}>
