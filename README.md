@@ -1,6 +1,6 @@
 <h1 align="center"> Look </h1> <br>
 <p align="center">
-  <a href="https://gitpoint.co/">
+  <a href="https://github.com/xiaotiandada/look">
     <img style="border-radius: 10px;" alt="GitPoint" title="GitPoint" width="200" src="./assets/images/icon.png" width="450">
   </a>
 </p>
