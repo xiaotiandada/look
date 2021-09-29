@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import {
   StyleSheet, Button as ButtonNative, Image as ImageNative,
   Modal, Alert, Pressable, ActionSheetIOS,
-  Dimensions, Platform
+  Dimensions, Platform, Share
 } from 'react-native';
 import useSaveImage from '../hooks/useSaveImage'
 import { FontAwesome } from "@expo/vector-icons";
@@ -53,7 +53,7 @@ const ViewImageFooter: React.FC<Props> = ({ imageData, currentIndex }) => {
   /**
  * handle view image share
  */
-  const handleShare = useCallback(() => {
+  const handleMore = useCallback(() => {
     ActionSheetIOS.showActionSheetWithOptions(
       {
         options: ["Cancel", "Generate", "Reset"],
@@ -108,15 +108,37 @@ const ViewImageFooter: React.FC<Props> = ({ imageData, currentIndex }) => {
       await fetchIsbookmark()
     }, [])
 
+    /**
+     * share
+     */
+    const handleShare = useCallback(async (url: string) => {
+      try {
+        const result = await Share.share({
+          message: 'Share Image URL',
+          url: url
+        });
+        if (result.action === Share.sharedAction) {
+          if (result.activityType) {
+            // shared with activity type of result.activityType
+          } else {
+            // shared
+          }
+        } else if (result.action === Share.dismissedAction) {
+          // dismissed
+        }
+      } catch (e: any) {
+        alert(e.message);
+      }
+    }, [])
   return (
     <StyledViewFooterWrapper style={{ width: width, height: 60 }} direction="row" alignItems="center" justifyContent="center">
-      <Pressable onPress={() => handleDownload(imageData[currentIndex].url)}>
+      <StyledItemPressable onPress={() => handleDownload(imageData[currentIndex].url)}>
         <StyledViewFooterItem alignItems="center" justifyContent="center">
           <FontAwesome size={16} name="download" color={'#fff'} />
           <Text style={{ color: '#fff', marginTop: 4 }}>下载</Text>
         </StyledViewFooterItem>
-      </Pressable>
-      <Pressable onPress={() => handleBookmark(imageData[currentIndex])}>
+      </StyledItemPressable>
+      <StyledItemPressable onPress={() => handleBookmark(imageData[currentIndex])}>
         <StyledViewFooterItem alignItems="center" justifyContent="center">
           {
             isBookmark
@@ -125,13 +147,19 @@ const ViewImageFooter: React.FC<Props> = ({ imageData, currentIndex }) => {
           }
           <Text style={{ color: '#fff', marginTop: 4 }}>{isBookmark ? '取消' : '喜欢'} </Text>
         </StyledViewFooterItem>
-      </Pressable>
-      <Pressable onPress={handleShare}>
+      </StyledItemPressable>
+      <StyledItemPressable onPress={handleMore}>
+        <StyledViewFooterItem alignItems="center" justifyContent="center">
+          <FontAwesome size={16} name="ellipsis-h" color={'#fff'} />
+          <Text style={{ color: '#fff', marginTop: 4 }}>更多</Text>
+        </StyledViewFooterItem>
+      </StyledItemPressable>
+      <StyledItemPressable onPress={() => handleShare(imageData[currentIndex].url)}>
         <StyledViewFooterItem alignItems="center" justifyContent="center">
           <FontAwesome size={16} name="share" color={'#fff'} />
           <Text style={{ color: '#fff', marginTop: 4 }}>分享</Text>
         </StyledViewFooterItem>
-      </Pressable>
+      </StyledItemPressable>
     </StyledViewFooterWrapper>
   )
 }
@@ -147,5 +175,8 @@ const StyledViewFooterItem = styled(Flex)`
   padding: 10px 0;
 `;
 
+const StyledItemPressable = styled(Pressable)`
+  flex: 1;
+`
 
 export default ViewImageFooter
